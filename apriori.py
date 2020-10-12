@@ -165,7 +165,7 @@ def apriori():
                             if not (flag):
                                 C.append(set(c))
             print(C)
-            #break
+            break   #break added for debugging
             if len(C)>0:
                 F[k]=C
                 ck = F[k]
