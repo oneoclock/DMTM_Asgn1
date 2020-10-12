@@ -6,13 +6,23 @@ Created on Sun Sep 27 19:16:38 2020
 """
 import csv
 import re
-file = open("data.txt", 'r')
+import itertools
+import sys
+
+if len(sys.argv)!=3:
+	print('Please provide input mis file names\n')
+	print('python apriori.py data.txt MIS.txt')
+	exit()
+
+file = open(sys.argv[1], 'r')
+#file = open("data.txt", 'r')
 #reader = csv.reader(file)
 #allRows = [int(row) for row in reader]
 
 T = [list(map(int,rec)) for rec in csv.reader(file, delimiter=',')]
+N=len(T)
 
-file2 =  open("mis.txt", 'r')                                                  #doesnt work if mis.txt has \n in the end.
+file2 =  open(sys.argv[2], 'r')                                                  #doesnt work if mis.txt has \n in the end.
 a=file2.read()
 d= {}
 for x in a.split("\n"):
@@ -62,6 +72,7 @@ M_keys = []
 for key in M:
     M_keys.append(key)
 """ creating L from sorted lsit of items in the order of ascending mis values.""" 
+
 L = []
 L.append(M_keys[0])
 for item in M_keys[1:]:
@@ -102,7 +113,6 @@ def get_T():
 
 """ Candidate Generation Function """
 def level2_can_gen(L,numT,sdc):
-    print(L)
     L_temp = []
     L_temp.extend(L)
     C2=[]
@@ -122,56 +132,64 @@ F={}
 F[1] = get_F1()
 def apriori():
     k=2
-    fk = [0]
-    while not not fk:
+    
+    while True:
         fk = []
         candidates = []                                                        #k-itemset candidates
         
         if k==2:
             ck = level2_can_gen(L,numT,sdc)                                    #ck is current k-item candidate set
         else:
-            print("not implemented")
-            #F_k_1=[(40,4),(50,3),(20,5),(40,3)]#F[k-1]
             F_k_1=F[k-1]
-            F_k_1=[(50, 30), (50, 40), (30, 40), (10, 4), (10, 9), (4, 9), (6, 8), (6, 1), (6, 2), (8, 1), (8, 2), (1, 2), (3, 5), (7, 20)]
-            #print(F_k_1)
-            
             C=[]
             for i in range(len(F_k_1)):
-                for j in range(i+1, len(F_k_1)): 
-                    f1 = list(F_k_1[i])[:k-2]
-                    f2 = list(F_k_1[j])[:k-2]
+                for j in range(len(F_k_1)): 
+                    f1 = F_k_1[i][:k-2]
+                    f2 = F_k_1[j][:k-2]
+                    if F_k_1[i]==F_k_1[j]:
+                    	continue
                     if f1==f2:
-                        #print(f1)
+                        
                         
                         ik_1=F_k_1[i][-1] 
                         ik_2=F_k_1[j][-1]
-                        #print(ik_1,ik_2)
-                        #print('M[ik_1]',M[ik_1])
-                        #print('M[ik_2]',M[ik_2])
-                        if M_keys.index(ik_1)<M_keys.index(ik_2) and (abs(M[ik_1]-M[ik_2])<=sdc): #add candidate 
-                            print("good")
-                            c=list(F_k_1[i])
+                     
+
+                        if (M_keys.index(ik_1)<M_keys.index(ik_2)) and (abs((support_count[ik_1]/numT)-(support_count[ik_2]/numT))<=sdc): #add candidate 
+                           
+                            c=F_k_1[i].copy()
+                            
                             c.append(ik_2)
+                 
                             flag=False
                             
-                            for window in range(k-1): #prune the candidate list 
-                                s=c[window:k-1]
+                            for s in itertools.combinations(c, k-1): #prune the candidate list
+                                #s=c[window:k-1]
+                        
+                                s=list(s)
+                            
                                 if (c[0] in s) or (M[c[1]]==M[c[0]]):
-                                    if s in F_k_1:
-                                        flag=True
-                                        break
+                                	if s not in F_k_1:
+                      
+                                		flag=True
+                                		break
                             
                             if not (flag):
-                                C.append(set(c))
-            print(C)
-            break   #break added for debugging
+                            
+                            	C.append(c)
+           
+            #break added for debugging
             if len(C)>0:
                 F[k]=C
                 ck = F[k]
+            else:
+            	ck=None
         #print(ck)
         #break
         #candidate_counts = [] * len(ck)
+        if not ck:
+        	break
+
         for t in T:
             for c in ck:                                                       #k-set candidates should not repeat that is 
                 candidates.append(candidate(0,c))                              #[[1,2],[2,1]]  <- should not occur.
@@ -180,11 +198,11 @@ def apriori():
         for c in candidates:
             if (c.count/numT >= M[c.items[0]]):
                 fk.append(c.items)
-        F[k] = fk       
-        print(fk)
+        F[k] = fk    
         k+=1
         ###
         #break
-    return fk
+    return F
 
 a= apriori()
+print(a)
