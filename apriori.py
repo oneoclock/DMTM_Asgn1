@@ -74,11 +74,117 @@ for l in L:
     if support_count[l]/len(T) >= M[l]:
         F1.append(l)
         
-""" Variables we have """
-print("M is a dictionary that consists of items as keys and MIS as values:",M)
-print("M_keys consists of all items in M sorted in the order of ascending MIS values:",M_keys)
-print("L consists of items satisfying the algorithm",L)
-print("F1 is the frequent itemset",F1)
+#""" Variables we have """
+#print("M is a dictionary that consists of items as keys and MIS as values:",M)
+#print("M_keys consists of all items in M, sorted in the order of ascending MIS values:",M_keys)
+#print("L consists of items satisfying the algorithm",L)
+#print("F1 is the frequent itemset",F1)
+#print("Support count of all the items in all Transactions",support_count)
+
+numT = len(T)
+
+def get_M():
+    return M
+def get_M_keys():
+    return M_keys
+def get_L():
+    return L
+def get_F1():
+    return F1
+def get_support_count():
+    return support_count
+def get_sdc():
+    return sdc
+def get_numT():
+    return len(T)
+def get_T():
+    return T
 
 """ Candidate Generation Function """
-#working
+def level2_can_gen(L,numT,sdc):
+    print(L)
+    L_temp = []
+    L_temp.extend(L)
+    C2=[]
+    for idx in range(len(L)):
+        L_temp.pop(0)
+        if (support_count[L[idx]] / numT) >= M[L[idx]]:
+            for item in L_temp:
+                if (support_count[item] / numT) >= M[L[idx]] and (abs(support_count[item] - support_count[L[idx]]) <= sdc):
+                    C2.append([L[idx],item])
+    return C2
+
+class candidate:
+    def __init__(self, count, items):
+        self.count=count
+        self.items=items
+F={}
+F[1] = get_F1()
+def apriori():
+    k=2
+    fk = [0]
+    while not not fk:
+        fk = []
+        candidates = []                                                        #k-itemset candidates
+        
+        if k==2:
+            ck = level2_can_gen(L,numT,sdc)                                    #ck is current k-item candidate set
+        else:
+            print("not implemented")
+            #F_k_1=[(40,4),(50,3),(20,5),(40,3)]#F[k-1]
+            F_k_1=F[k-1]
+            F_k_1=[(50, 30), (50, 40), (30, 40), (10, 4), (10, 9), (4, 9), (6, 8), (6, 1), (6, 2), (8, 1), (8, 2), (1, 2), (3, 5), (7, 20)]
+            #print(F_k_1)
+            
+            C=[]
+            for i in range(len(F_k_1)):
+                for j in range(i+1, len(F_k_1)): 
+                    f1 = list(F_k_1[i])[:k-2]
+                    f2 = list(F_k_1[j])[:k-2]
+                    if f1==f2:
+                        #print(f1)
+                        
+                        ik_1=F_k_1[i][-1] 
+                        ik_2=F_k_1[j][-1]
+                        #print(ik_1,ik_2)
+                        #print('M[ik_1]',M[ik_1])
+                        #print('M[ik_2]',M[ik_2])
+                        if M_keys.index(ik_1)<M_keys.index(ik_2) and (abs(M[ik_1]-M[ik_2])<=sdc): #add candidate 
+                            print("good")
+                            c=list(F_k_1[i])
+                            c.append(ik_2)
+                            flag=False
+                            
+                            for window in range(k-1): #prune the candidate list 
+                                s=c[window:k-1]
+                                if (c[0] in s) or (M[c[1]]==M[c[0]]):
+                                    if s in F_k_1:
+                                        flag=True
+                                        break
+                            
+                            if not (flag):
+                                C.append(set(c))
+            print(C)
+            #break
+            if len(C)>0:
+                F[k]=C
+                ck = F[k]
+        #print(ck)
+        #break
+        #candidate_counts = [] * len(ck)
+        for t in T:
+            for c in ck:                                                       #k-set candidates should not repeat that is 
+                candidates.append(candidate(0,c))                              #[[1,2],[2,1]]  <- should not occur.
+                if all(elem in t  for elem in c):
+                    candidates[-1].count += 1
+        for c in candidates:
+            if (c.count/numT >= M[c.items[0]]):
+                fk.append(c.items)
+        F[k] = fk       
+        print(fk)
+        k+=1
+        ###
+        #break
+    return fk
+
+a= apriori()
