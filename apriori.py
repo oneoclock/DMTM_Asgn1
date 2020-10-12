@@ -8,9 +8,12 @@ import re
 import itertools
 import sys
 
-if len(sys.argv)!=3:
+
+print(sys.argv)
+
+if len(sys.argv)!=3 and len(sys.argv)!=4:
 	print('Please provide input mis file names\n')
-	print('python apriori.py data.txt MIS.txt')
+	print('python apriori.py data.txt MIS.txt results.txt')
 	exit()
 
 file = open(sys.argv[1], 'r')
@@ -144,25 +147,26 @@ def apriori():
         if k==2:
             ck = level2_can_gen(L,numT,sdc)                                    #ck is current k-item candidate set
             print (ck)
-            #break
+        #code to generate candidates for k>2   
         else:
             #break
-            F_k_1=F[k-1]
+            F_k_1=F[k-1] #denotes F_k-1
             C=[]
             for i in range(len(F_k_1)):
                 for j in range(len(F_k_1)): 
-                    f1 = F_k_1[i][:k-2]
-                    f2 = F_k_1[j][:k-2]
+                    f1 = F_k_1[i][:k-2] #first itemset
+                    f2 = F_k_1[j][:k-2]#second itemset
                     if F_k_1[i]==F_k_1[j]:
                     	continue
-                    if f1==f2:
+                    if f1==f2:#if first k-2 items are the same 
                         
                         
-                        ik_1=F_k_1[i][-1] 
+                        ik_1=F_k_1[i][-1] #get last items from both itemsets
                         ik_2=F_k_1[j][-1]
                      
 
-                        if (M_keys.index(ik_1)<M_keys.index(ik_2)) and (abs((support_count[ik_1]/numT)-(support_count[ik_2]/numT))<=sdc): #add candidate 
+                        if (M_keys.index(ik_1)<M_keys.index(ik_2)) and (abs((support_count[ik_1]/numT)\
+                        -(support_count[ik_2]/numT))<=sdc): #add candidate if the conditons are satisfied 
                            
                             c=F_k_1[i].copy()
                             
@@ -175,7 +179,7 @@ def apriori():
                         
                                 s=list(s)
                             
-                                if (c[0] in s) or (M[c[1]]==M[c[0]]):
+                                if (c[0] in s) or (M[c[1]]==M[c[0]]): #pruning condition 
                                 	if s not in F_k_1:
                       
                                 		flag=True
@@ -223,5 +227,25 @@ def apriori():
         #break
     return F
 
-a= apriori()
-print(a)
+
+candidates_generated= apriori()
+print(candidates_generated)
+
+#write output to file 
+if len(sys.argv)==4:
+	result_file=sys.argv[3]
+else:
+	result_file='results.txt'
+with open(result_file,'w') as f:
+	for cand_count,cand in candidates_generated.items():
+		#print(cand_count)
+		f.write('(Length-'+str(cand_count)+' '+str(len(cand))+'\n')
+		for cand_item in cand:
+			#print(cand_item)
+			if type(cand_item)!=list:
+				f.write('('+str(cand_item)+')\n')
+				continue
+			string=' '.join(map(str,cand_item))
+			f.write('('+string+')\n')
+		f.write(')\n')
+
