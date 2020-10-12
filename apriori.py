@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Sep 27 19:16:38 2020
-
 @author: Hiral
 """
 import csv
@@ -86,11 +85,11 @@ for l in L:
         F1.append(l)
         
 #""" Variables we have """
-#print("M is a dictionary that consists of items as keys and MIS as values:",M)
+print("M is a dictionary that consists of items as keys and MIS as values:",M)
 #print("M_keys consists of all items in M, sorted in the order of ascending MIS values:",M_keys)
-#print("L consists of items satisfying the algorithm",L)
+print("L consists of items satisfying the algorithm",L)
 #print("F1 is the frequent itemset",F1)
-#print("Support count of all the items in all Transactions",support_count)
+print("Support count of all the items in all Transactions",support_count)
 
 numT = len(T)
 
@@ -111,16 +110,21 @@ def get_numT():
 def get_T():
     return T
 
+print(get_numT())
 """ Candidate Generation Function """
 def level2_can_gen(L,numT,sdc):
     L_temp = []
     L_temp.extend(L)
     C2=[]
+    #print(L)
     for idx in range(len(L)):
+        #print(C2)
         L_temp.pop(0)
         if (support_count[L[idx]] / numT) >= M[L[idx]]:
+            #print(True)
             for item in L_temp:
-                if (support_count[item] / numT) >= M[L[idx]] and (abs(support_count[item] - support_count[L[idx]]) <= sdc):
+                if (support_count[item] / numT) >= M[L[idx]] and (abs((support_count[item]/numT) - (support_count[L[idx]]/numT)) <= sdc):
+                    #print("Double")
                     C2.append([L[idx],item])
     return C2
 
@@ -139,7 +143,10 @@ def apriori():
         
         if k==2:
             ck = level2_can_gen(L,numT,sdc)                                    #ck is current k-item candidate set
+            print (ck)
+            #break
         else:
+            #break
             F_k_1=F[k-1]
             C=[]
             for i in range(len(F_k_1)):
@@ -190,14 +197,26 @@ def apriori():
         if not ck:
         	break
 
-        for t in T:
-            for c in ck:                                                       #k-set candidates should not repeat that is 
-                candidates.append(candidate(0,c))                              #[[1,2],[2,1]]  <- should not occur.
+        for c in ck:
+            candidates.append(candidate(0,c))
+            for t in T:                                                        #k-set candidates should not repeat that is 
+                                                                               #[[1,2],[2,1]]  <- should not occur.
+                #print("111")
                 if all(elem in t  for elem in c):
                     candidates[-1].count += 1
+        print(len(candidates))
+        z=0
         for c in candidates:
+#            if c.count>1:
+#                z+=1
+#                print("sdvsdvsd")
+#                break
+        
+            
             if (c.count/numT >= M[c.items[0]]):
                 fk.append(c.items)
+                #print(c.items)
+        print(z)
         F[k] = fk    
         k+=1
         ###
